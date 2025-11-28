@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine
 
-engine = create_engine("sqlite:///chatroom.db", echo=False)
 
-with engine.begin() as conn:
-    conn.exec_driver_sql("DROP TABLE IF EXISTS users")
+if input("Would you like to create a new account [N] or to login [O]?\n") == "N":
+    print("Enter a unique username and memorable password.")
+    username = input("Choose a username: ")
