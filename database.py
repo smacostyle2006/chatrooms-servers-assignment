@@ -11,14 +11,16 @@ with engine.begin() as conn:
             id          INTEGER PRIMARY KEY,
             username    TEXT NOT NULL,
             password    TEXT NOT NULL
-        )
+        );
+    """)
+    conn.exec_driver_sql("""
         CREATE TABLE messages (
             id          INTEGER PRIMARY KEY,
             username    TEXT NOT NULL REFERENCES users(username),
             content     TEXT NOT NULL,
             date_sent   DATE NOT NULL,
             time_sent   TIME NOT NULL
-        )
+        );
     """)
 
 
