@@ -1,3 +1,4 @@
+/*This file is only for pre-type sql commands to have IDE help with auto-typing instead of typing in string in python*/
 DROP TABLE IF EXISTS users
 
 CREATE TABLE users (

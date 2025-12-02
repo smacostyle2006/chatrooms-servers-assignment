@@ -1,4 +1,4 @@
-from flask import request
+import requests
 
 
 
@@ -12,7 +12,7 @@ if choice == "N":
     username = input("Choose a username: ").strip()
     password = input("Enter a password: ").strip()
 
-    row = request.post(
+    row = requests.post(
         HOST + "/signup",
         data={"username": username, "password": password}
     )
@@ -28,13 +28,13 @@ if choice == "N":
             continue
 
         # send message
-        request.post(
+        requests.post(
             HOST + "/send",
             data={"username": username, "content": msg}
         )
 
         # get all messages
-        row = request.get(HOST + "/messages")
+        row = requests.get(HOST + "/messages")
         data = row.json()
 
         print("\n--- Chatroom Messages ---")
@@ -48,7 +48,7 @@ elif choice == "L":
     username = input("Enter your username: ").strip()
     password = input("Enter your password: ").strip()
 
-    row = request.post(
+    row = requests.post(
         HOST + "/login",
         data={"username": username, "password": password}
     )
@@ -62,13 +62,13 @@ elif choice == "L":
             continue
 
         # send message
-        request.post(
+        requests.post(
             HOST + "/send",
             data={"username": username, "content": msg}
         )
 
         # get all messages
-        row = request.get(HOST + "/messages")
+        row = requests.get(HOST + "/messages")
         data = row.json()
 
         print("\n--- Chatroom Messages ---")
