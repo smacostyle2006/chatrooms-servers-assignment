@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import create_engine, text
-from datatime import datatime
+from datetime import datetime
 
 app = Flask(__name__)
 engine = create_engine("sqlite:///chatroom.db", echo=False)
