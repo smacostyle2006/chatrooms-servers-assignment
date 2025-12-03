@@ -1,5 +1,5 @@
 import requests
-
+from datetime import datetime
 
 
 HOST = "http://127.0.0.1:65435"
@@ -11,36 +11,55 @@ if choice == "N":
     print("Enter a unique username and memorable password.")
     username = input("Choose a username: ").strip()
     password = input("Enter a password: ").strip()
+    
+    response = requests.post( 
+        HOST + "/signup", 
+        data={"username": username, "password": password})
 
-    row = requests.post(
-        HOST + "/signup",
-        data={"username": username, "password": password}
-    )
+    if response.status_code == 400:
+        print("You have to type a username and password")
+    elif response.status_code == 409:
+        print("Username already taken")
+    else:
+        print("\nAccount created successfully!")
 
-    print("\nAccount created successfully!")
-    print("Login Successful!\n")
 
-    print("Type messages to send. Press Ctrl+C to exit.")
+        def pull_and_show_messages():
+            r = requests.get(HOST + "/messages")
 
-    while True:
-        msg = input("> ").strip()
-        if msg == "":
-            continue
+            messages = r.json()
 
-        # send message
-        requests.post(
-            HOST + "/send",
-            data={"username": username, "content": msg}
-        )
+            print("\n===== Previous Messages =====")
+            for msg in messages["messages"]:
+                full_stamp = f"{msg['date']} {msg['time']}"
+                print(f"[{full_stamp}] {msg['username']}: {msg['content']}")
+            print("=============================\n")
 
-        # get all messages
-        row = requests.get(HOST + "/messages")
-        data = row.json()
+        
+        pull_and_show_messages()
+        print("Type messages to send. Press Ctrl+C to exit.")
 
-        print("\n--- Chatroom Messages ---")
-        for m in data["messages"]:
-            print(f"{m['date']} {m['time']} - {m['username']}: {m['content']}")
-        print("------------------------\n")
+        def send_message():
+            while True:
+                msg = input("> ").strip()
+
+                if msg == "":
+                    continue
+
+                now = datetime.now()
+                date_str = now.strftime("%Y-%m-%d")
+                time_str = now.strftime("%H:%M:%S")
+
+                requests.post(
+                    HOST + "/send",
+                    data={
+                        "username": username,
+                        "content": msg,
+                        "date": date_str,
+                        "time": time_str
+                    }
+                )
+        send_message()
 
 # --------------login to account ------------------
 
