@@ -1,8 +1,10 @@
 import requests
 from datetime import datetime
+import asyncio
 
+from messages_function import run_messages
+import config as cfg
 
-HOST = "http://127.0.0.1:65435"
 
 choice = input("Would you like to create a new account [N] or to login [L]?\n").upper()
 
@@ -13,7 +15,7 @@ if choice == "N":
     password = input("Enter a password: ").strip()
     
     response = requests.post( 
-        HOST + "/signup", 
+        cfg.HOST + "/signup", 
         data={"username": username, "password": password})
 
     if response.status_code == 400:
@@ -23,9 +25,9 @@ if choice == "N":
     else:
         print("\nAccount created successfully!")
 
-
         def pull_and_show_messages():
-            r = requests.get(HOST + "/messages")
+            message_number = 0
+            r = requests.get(cfg.HOST + "/messages")
 
             messages = r.json()
 
@@ -33,33 +35,15 @@ if choice == "N":
             for msg in messages["messages"]:
                 full_stamp = f"{msg['date']} {msg['time']}"
                 print(f"[{full_stamp}] {msg['username']}: {msg['content']}")
+                message_number += 1
             print("=============================\n")
+            return message_number
 
         
-        pull_and_show_messages()
+        message_number = pull_and_show_messages()
         print("Type messages to send. Press Ctrl+C to exit.")
-
-        def send_message():
-            while True:
-                msg = input("> ").strip()
-
-                if msg == "":
-                    continue
-
-                now = datetime.now()
-                date_str = now.strftime("%Y-%m-%d")
-                time_str = now.strftime("%H:%M:%S")
-
-                requests.post(
-                    HOST + "/send",
-                    data={
-                        "username": username,
-                        "content": msg,
-                        "date": date_str,
-                        "time": time_str
-                    }
-                )
-        send_message()
+        print(message_number)
+        asyncio.run(run_messages(username, message_number))
 
 # --------------login to account ------------------
 
