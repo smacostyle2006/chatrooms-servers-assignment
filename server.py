@@ -14,7 +14,8 @@ def signup():
 
     if not username or not password:
         abort(400, description="Username and password required")
-     
+    
+
     with engine.begin() as conn:
         try:
             conn.execute(
@@ -22,15 +23,14 @@ def signup():
                 {"u": username, "p": password}
             )
         except:
-            abort(401, description="Username already taken")
+            abort(409, description="Username already exists")
 
     return jsonify({"message": "User created"}), 201
     
 
 # ------------------ LOGIN ------------------ 
-@app.route("/login", methods = ["GET", "POST"])
+@app.route("/login", methods = ["POST"])
 def login():
-    if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
         
@@ -43,7 +43,7 @@ def login():
         if row is None:
          abort(401, description="Invalid username or password")
 
-    return jsonify({"message": "Login successful"})
+        return jsonify({"message": "Login successful"}), 200
 
 # ------------------ SEND MESSAGE ------------------
 @app.route("/send", methods=["POST"])
@@ -65,36 +65,31 @@ def send_message():
             {"u": username, "c": content, "d": date, "t": time}
         )
 
-    return jsonify({"message": "Message stored"})
+    return jsonify({"message": "Message stored"}), 201
 
 # ------------------ GET MESSAGES ------------------
 @app.route("/messages", methods=["GET"])
 def messages():
     
-    last_id = request.args.get("last_id", 0)
-
     with engine.begin() as conn:
         rows = conn.execute(
             text("""
-                 SELECT id, username, content, date_sent, time_sent 
+                 SELECT username, content, date_sent, time_sent 
                  FROM messages
-                 WHERE id > :last_id
-                 ORDER BY id ASC
-                 """), {"last_id":last_id}
+                 """)
         ).fetchall()
 
     output = []
     for r in rows:
         output.append({
-            "id":       r[0],
-            "username": r[1],
-            "content":  r[2],
-            "date":     r[3],
-            "time":     r[4]
+            "username": r[0],
+            "content":  r[1],
+            "date":     r[2],
+            "time":     r[3]
         })
 
     return jsonify({"messages": output})
 
         
 if __name__ == "__main__":
-    app.run(port=65435, debug=True)
+    app.run(port=65435, debug=True) 
