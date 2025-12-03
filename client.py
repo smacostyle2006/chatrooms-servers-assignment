@@ -56,6 +56,8 @@ elif choice == "L":
 
     print("Type messages to send. Press Ctrl+C to exit.")
 
+    last_id = 0
+
     while True:
         msg = input("> ").strip()
         if msg == "":
@@ -68,12 +70,13 @@ elif choice == "L":
         )
 
         # get all messages
-        row = requests.get(HOST + "/messages")
+        row = requests.get(HOST + "/messages", params={"last_id": last_id})
         data = row.json()
 
         print("\n--- Chatroom Messages ---")
         for m in data["messages"]:
             print(f"{m['date']} {m['time']} - {m['username']}: {m['content']}")
+            last_id = m['id']
         print("------------------------\n")
 
 
