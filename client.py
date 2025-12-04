@@ -29,8 +29,8 @@ try:
         password = input("Enter a password: ").strip()
 
         if username == "" or password == "":
-            print("You have to type a username and password")
-
+            raise ValueError("You have to type a username and password")
+            
         response = requests.post( 
             cfg.HOST + "/signup", 
             data={"username": username, "password": password})
@@ -50,8 +50,8 @@ try:
         password = input("Enter your password: ").strip()
 
         if username == "" or password == "":
-            print("You have to type a username and password")
-
+            raise ValueError("You have to type a username and password")
+        
         row = requests.post(
             cfg.HOST + "/login",
             data={"username": username, "password": password}
@@ -76,10 +76,10 @@ try:
 
 except KeyboardInterrupt:
     print("You seem want to leave early.. Have a good day!")
+except ValueError as e:
+    print(e)
 except:
     print("There is something wrong with connection between users and servers, try to re-initiate server before proceed!")
-
-
 
 
 
