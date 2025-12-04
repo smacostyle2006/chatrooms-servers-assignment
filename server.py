@@ -12,12 +12,13 @@ def hash_password(password):
     hashed = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
     return hashed.decode('utf-8')     # store as normal text
 
-#------------- create new account----------------
+
 def check_password(password, stored_hash):
     pw_bytes = password.encode('utf-8')
     hash_bytes = stored_hash.encode('utf-8')
     return bcrypt.checkpw(pw_bytes, hash_bytes)
 
+#------------- create new account----------------
 @app.route("/signup", methods=["POST"])
 def signup():
     username = request.form.get("username", "").strip()
