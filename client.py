@@ -27,18 +27,18 @@ try:
         print("Enter a unique username and memorable password.")
         username = input("Choose a username: ").strip()
         password = input("Enter a password: ").strip()
-        
+
+        if username == "" or password == "":
+            print("You have to type a username and password")
+
         response = requests.post( 
             cfg.HOST + "/signup", 
             data={"username": username, "password": password})
-
-        if response.status_code == 400:
-            print("You have to type a username and password")
-        elif response.status_code == 409:
+        
+        if response.status_code == 409:
             print("Username already taken")
         else:
             print("\nAccount created successfully!")
-
             
             message_number = pull_and_show_messages()
             print("Type messages to send. Press Ctrl+C to exit.")
@@ -49,38 +49,28 @@ try:
         username = input("Enter your username: ").strip()
         password = input("Enter your password: ").strip()
 
+        if username == "" or password == "":
+            print("You have to type a username and password")
+
         row = requests.post(
-            HOST + "/login",
+            cfg.HOST + "/login",
             data={"username": username, "password": password}
         )
-        print("Login Successful! \n")
 
-        print("Type messages to send. Press Ctrl+C to exit.")
+        if row.status_code == 401:
+            print("Invalid username or password")
+        else:
+            print("Login Successful! \n")
 
-        last_id = 0
+            print("Type messages to send. Press Ctrl+C to exit.")
 
-        while True:
-            msg = input("> ").strip()
-            if msg == "":
-                continue
+            print("\nAccount created successfully!")
+            
+            message_number = pull_and_show_messages()
+            print("Type messages to send. Press Ctrl+C to exit.")
+            asyncio.run(run_messages(username, message_number))
 
-            # send message
-            requests.post(
-                HOST + "/send",
-                data={"username": username, "content": msg}
-            )
-
-            # get all messages
-            row = requests.get(HOST + "/messages", params={"last_id": last_id})
-            data = row.json()
-
-            print("\n--- Chatroom Messages ---")
-            for m in data["messages"]:
-                print(f"{m['date']} {m['time']} - {m['username']}: {m['content']}")
-                last_id = m['id']
-            print("------------------------\n")
-
-    # ------------------ INVALID CHOICE ------------------
+# ------------------ INVALID CHOICE ------------------
     else:
         print("Invalid option. Please choose either N or L.")
 
