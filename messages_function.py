@@ -14,7 +14,7 @@ async def pull_messages(message_number):
             full_stamp = f"{msg['date']} {msg['time']}"
             print(f"[{full_stamp}] {msg['username']}: {msg['content']}")
             message_number += 1
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.2)
         
 
 async def send_message(username):
