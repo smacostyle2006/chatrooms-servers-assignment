@@ -5,30 +5,37 @@ from datetime import datetime
 app = Flask(__name__)
 engine = create_engine("sqlite:///chatroom.db", echo=False)
 
+#-------------password Encoding--------------
+def encode_password(password):
+    return password[::-1]         # Store reversed password
+ 
+def check_password(plain):
+    return plain[::-1]         #Compare reversed versions
+
 # ------------------ SIGNUP ------------------
 @app.route("/signup", methods=["POST"])
 def signup():
-
+ 
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "").strip()
-
+ 
     if not username or not password:
         abort(400, description="Username and password required")
     
-
+ 
     with engine.begin() as conn:
         try:
             conn.execute(
                 text("INSERT INTO users (username, password) VALUES (:u, :p)"),
-                {"u": username, "p": password}
+                {"u": username, "p": encode_password(password)}
             )
         except:
             abort(409, description="Username already exists")
-
+ 
     return jsonify({"message": "User created"}), 201
     
 
-# ------------------ LOGIN ------------------ 
+# ------------------ LOGIN ------------------
 @app.route("/login", methods = ["POST"])
 def login():
         username = request.form.get("username", "").strip()
@@ -37,7 +44,7 @@ def login():
         with engine.begin() as conn:
            row = conn.execute(
             text("SELECT * FROM users WHERE username = :u AND password = :p"),
-            {"u": username, "p": password}
+            {"u": username, "p": check_password(password)}
         ).fetchone()
 
         if row is None:
