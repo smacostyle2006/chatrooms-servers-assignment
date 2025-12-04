@@ -1,56 +1,69 @@
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import create_engine, text
 from datetime import datetime
+import bcrypt
 
 app = Flask(__name__)
 engine = create_engine("sqlite:///chatroom.db", echo=False)
 
 #-------------password Encoding--------------
-def encode_password(password):
-    return password[::-1]         # Store reversed password
- 
-def check_password(plain):
-    return plain[::-1]         #Compare reversed versions
+def hash_password(password):
+    pw_bytes = password.encode('utf-8')        # convert to bytes
+    hashed = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
+    return hashed.decode('utf-8')     # store as normal text
 
-# ------------------ SIGNUP ------------------
+#------------- create new account----------------
+def check_password(password, stored_hash):
+    pw_bytes = password.encode('utf-8')
+    hash_bytes = stored_hash.encode('utf-8')
+    return bcrypt.checkpw(pw_bytes, hash_bytes)
+
 @app.route("/signup", methods=["POST"])
 def signup():
- 
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "").strip()
- 
+
     if not username or not password:
         abort(400, description="Username and password required")
-    
- 
+
+    hashed = hash_password(password)
+
     with engine.begin() as conn:
         try:
             conn.execute(
                 text("INSERT INTO users (username, password) VALUES (:u, :p)"),
-                {"u": username, "p": encode_password(password)}
+                {"u": username, "p": hashed}
             )
         except:
             abort(409, description="Username already exists")
- 
+
     return jsonify({"message": "User created"}), 201
     
 
 # ------------------ LOGIN ------------------
-@app.route("/login", methods = ["POST"])
+@app.route("/login", methods=["POST"])
 def login():
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "").strip()
-        
-        with engine.begin() as conn:
-           row = conn.execute(
-            text("SELECT * FROM users WHERE username = :u AND password = :p"),
-            {"u": username, "p": check_password(password)}
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
+
+    if not username or not password:
+        abort(400, description="Username and password required")
+
+    with engine.begin() as conn:
+        row = conn.execute(
+            text("SELECT username, password FROM users WHERE username = :u"),
+            {"u": username}
         ).fetchone()
 
-        if row is None:
-         abort(401, description="Invalid username or password")
+    if row is None:
+        abort(401, description="Invalid username or password")
 
-        return jsonify({"message": "Login successful"}), 200
+    stored_hash = row[1]
+
+    if not check_password(password, stored_hash):
+        abort(401, description="Invalid username or password")
+
+    return jsonify({"message": "Login successful"}), 200
 
 # ------------------ SEND MESSAGE ------------------
 @app.route("/send", methods=["POST"])

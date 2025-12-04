@@ -1,4 +1,4 @@
- FROM python:3.12-slim
+FROM python:3.12-slim
  
 WORKDIR /app
  
@@ -7,7 +7,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
  
 COPY . .
-
-EXPOSE 65435
  
+EXPOSE 65435
+
 CMD ["python", "server.py"]
